@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package post;
+
+option go_package = "postaggregator/postpb";
+
+message ListPostsRequest {
+  int32 userId = 1;
+}
+
+message Post {
+  int32 postId = 1;
+  int32 userId = 2;
+  string content = 3;
+  string timestamp = 4; // ISO8601
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+}
+
+service PostService {
+  rpc ListPostsByUser(ListPostsRequest) returns (ListPostsResponse);
+}

@@ -6,23 +6,23 @@ import (
 )
 
 func main() {
-	user := &User{userId: 1, userName: "Alice"}
-	// Add some posts
-	user.AddPost(&Post{postId: 1, userId: 1, timeStamp: time.Now().Add(-1 * time.Minute), content: "First post"})
-	user.AddPost(&Post{postId: 2, userId: 1, timeStamp: time.Now().Add(-5 * time.Minute), content: "Second post"})
-	user.AddPost(&Post{postId: 3, userId: 1, timeStamp: time.Now().Add(-10 * time.Minute), content: "Latest post"})
+	// Create users
+	alice := &User{userId: 1, userName: "Alice"}
+	bob := &User{userId: 2, userName: "Bob"}
+	charlie := &User{userId: 3, userName: "Charlie"}
 
-	// Get latest post
-	// latest := user.GetLatestPost(1)
-	// if latest != nil {
-	// 	fmt.Printf("Latest post by user %d: \"%s\" at %s\n", latest.userId, latest.content, latest.timeStamp.Format(time.RFC822))
-	// }
+	// Establish following
+	alice.Following = []*User{bob, charlie}
 
-	recentPosts := user.GetRecentPosts(1)
+	// Add posts to Bob and Charlie
+	now := time.Now()
+	bob.AddPost(&Post{postId: 1, userId: 2, timeStamp: now.Add(-2 * time.Minute), content: "Bob's post"})
+	charlie.AddPost(&Post{postId: 2, userId: 3, timeStamp: now.Add(-1 * time.Minute), content: "Charlie’s post"})
 
-	for _, post := range recentPosts {
-		// fmt.Printf("%+v\n", post)
-		fmt.Printf("• %s (at %s)\n", post.content, post.timeStamp.Format(time.RFC822))
+	// Get feed for Alice
+	feed := alice.GetUserFeed()
+	for _, post := range feed {
+		fmt.Printf("Post from user %d: %s at %s\n", post.userId, post.content, post.timeStamp.Format(time.RFC822))
 	}
 
 }
