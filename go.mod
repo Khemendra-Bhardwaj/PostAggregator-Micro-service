@@ -1,8 +1,10 @@
-module PostAggregator
+module postaggregator
 
 go 1.24.2
 
 require (
+	github.com/graphql-go/graphql v0.8.1
+	github.com/graphql-go/handler v0.2.4
 	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.4
 )
