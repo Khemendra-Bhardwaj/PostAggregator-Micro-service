@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"postaggregator/internal/models"
-	"postaggregator/postpb"
+	postpb "postaggregator/postpb/proto"
 
 	"google.golang.org/grpc"
 )

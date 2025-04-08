@@ -2,8 +2,7 @@ package grpcclient
 
 import (
 	"context"
-
-	"postaggregator/postpb"
+	postpb "postaggregator/postpb/proto"
 
 	"google.golang.org/grpc"
 )
