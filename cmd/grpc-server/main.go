@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"postaggregator/internal/models"
-	postpb "postaggregator/postpb/proto"
+	postpb "postaggregator/proto"
 
 	"google.golang.org/grpc"
 )
@@ -38,6 +38,28 @@ func (s *postServer) ListPostsByUser(ctx context.Context, req *postpb.ListPostsR
 	}
 
 	posts := user.GetRecentPostsByUser(int(req.UserId))
+	var pbPosts []*postpb.Post
+	for _, p := range posts {
+		pbPosts = append(pbPosts, &postpb.Post{
+			PostId:    int32(p.PostId),
+			UserId:    int32(p.UserId),
+			Content:   p.Content,
+			Timestamp: p.TimeStamp.Format(time.RFC3339),
+		})
+	}
+
+	return &postpb.ListPostsResponse{Posts: pbPosts}, nil
+}
+
+func (s *postServer) GetUserFeed(ctx context.Context, req *postpb.ListPostsRequest) (*postpb.ListPostsResponse, error) {
+	user, exists := s.users[req.UserId]
+	if !exists {
+		return &postpb.ListPostsResponse{Posts: []*postpb.Post{}}, nil
+	}
+
+	// Use the native User.GetUserFeed method
+	posts := user.GetUserFeed(int(req.UserId))
+
 	var pbPosts []*postpb.Post
 	for _, p := range posts {
 		pbPosts = append(pbPosts, &postpb.Post{

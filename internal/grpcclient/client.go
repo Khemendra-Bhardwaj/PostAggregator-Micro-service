@@ -2,7 +2,7 @@ package grpcclient
 
 import (
 	"context"
-	postpb "postaggregator/postpb/proto"
+	postpb "postaggregator/proto"
 
 	"google.golang.org/grpc"
 )
@@ -38,6 +38,7 @@ func (c *GRPCClient) ListPostsByUser(userID int32) ([]*postpb.Post, error) {
 	return res.Posts, nil
 }
 
+// lists the following of the user
 func (c *GRPCClient) ListFollowing(userID int32) ([]int32, error) {
 	req := &postpb.ListFollowingRequest{UserId: userID}
 	res, err := c.Client.ListFollowing(context.Background(), req)
@@ -45,4 +46,14 @@ func (c *GRPCClient) ListFollowing(userID int32) ([]int32, error) {
 		return nil, err
 	}
 	return res.FollowingIds, nil
+}
+
+// list user feed from fetching from its followers
+func (c *GRPCClient) GetUserFeed(userID int32) ([]*postpb.Post, error) {
+	req := &postpb.ListPostsRequest{UserId: userID}
+	res, err := c.Client.GetUserFeed(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+	return res.Posts, nil
 }

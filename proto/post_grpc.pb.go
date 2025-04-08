@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	PostService_ListPostsByUser_FullMethodName = "/post.PostService/ListPostsByUser"
 	PostService_ListFollowing_FullMethodName   = "/post.PostService/ListFollowing"
+	PostService_GetUserFeed_FullMethodName     = "/post.PostService/GetUserFeed"
 )
 
 // PostServiceClient is the client API for PostService service.
@@ -29,6 +30,7 @@ const (
 type PostServiceClient interface {
 	ListPostsByUser(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error)
 	ListFollowing(ctx context.Context, in *ListFollowingRequest, opts ...grpc.CallOption) (*ListFollowingResponse, error)
+	GetUserFeed(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error)
 }
 
 type postServiceClient struct {
@@ -59,12 +61,23 @@ func (c *postServiceClient) ListFollowing(ctx context.Context, in *ListFollowing
 	return out, nil
 }
 
+func (c *postServiceClient) GetUserFeed(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPostsResponse)
+	err := c.cc.Invoke(ctx, PostService_GetUserFeed_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostServiceServer is the server API for PostService service.
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility.
 type PostServiceServer interface {
 	ListPostsByUser(context.Context, *ListPostsRequest) (*ListPostsResponse, error)
 	ListFollowing(context.Context, *ListFollowingRequest) (*ListFollowingResponse, error)
+	GetUserFeed(context.Context, *ListPostsRequest) (*ListPostsResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedPostServiceServer) ListPostsByUser(context.Context, *ListPost
 }
 func (UnimplementedPostServiceServer) ListFollowing(context.Context, *ListFollowingRequest) (*ListFollowingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListFollowing not implemented")
+}
+func (UnimplementedPostServiceServer) GetUserFeed(context.Context, *ListPostsRequest) (*ListPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserFeed not implemented")
 }
 func (UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 func (UnimplementedPostServiceServer) testEmbeddedByValue()                     {}
@@ -138,6 +154,24 @@ func _PostService_ListFollowing_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostService_GetUserFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPostsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostServiceServer).GetUserFeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PostService_GetUserFeed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostServiceServer).GetUserFeed(ctx, req.(*ListPostsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PostService_ServiceDesc is the grpc.ServiceDesc for PostService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var PostService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListFollowing",
 			Handler:    _PostService_ListFollowing_Handler,
+		},
+		{
+			MethodName: "GetUserFeed",
+			Handler:    _PostService_GetUserFeed_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

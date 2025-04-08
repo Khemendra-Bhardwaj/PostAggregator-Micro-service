@@ -36,4 +36,5 @@ message ListFollowingResponse {
 service PostService {
   rpc ListPostsByUser(ListPostsRequest) returns (ListPostsResponse);
   rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
+  rpc GetUserFeed(ListPostsRequest) returns  (ListPostsResponse); 
 }

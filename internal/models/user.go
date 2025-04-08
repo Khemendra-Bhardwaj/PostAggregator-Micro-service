@@ -56,7 +56,7 @@ func (u *User) GetRecentPostsByUser(userId int) []*Post {
 }
 
 // Get User Feed From its Followings
-func (u *User) GetUserFeed() []*Post {
+func (u *User) GetUserFeed(userId int) []*Post {
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	feedHeap := &PostHeap{}
@@ -87,9 +87,9 @@ func (u *User) GetUserFeed() []*Post {
 	for feedHeap.Len() > 0 {
 		result = append(result, heap.Pop(feedHeap).(*Post))
 	}
-	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
-		result[i], result[j] = result[j], result[i]
-	}
+	// for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+	// 	result[i], result[j] = result[j], result[i]
+	// }
 
 	return result
 }
