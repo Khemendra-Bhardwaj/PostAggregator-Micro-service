@@ -3,6 +3,7 @@ package schema
 import (
 	"postaggregator/internal/grpcclient"
 	"postaggregator/internal/models"
+	"sort"
 	"strconv"
 	"time"
 
@@ -56,39 +57,24 @@ func SetupSchema(grpcClient *grpcclient.GRPCClient) (graphql.Schema, error) {
 						return nil, err
 					}
 
-					// Create a temporary user with proper following relationships
-					tempUser := &models.User{UserId: userID}
-
-					// Set following relationships based on userID
-					switch userID {
-					case 1: // Alice follows Bob and Charlie
-						tempUser.Following = []*models.User{
-							{UserId: 2},
-							{UserId: 3},
-						}
-					case 2: // Bob follows Charlie
-						tempUser.Following = []*models.User{
-							{UserId: 3},
-						}
-					case 3: // Charlie follows Bob
-						tempUser.Following = []*models.User{
-							{UserId: 2},
-						}
-					default:
-						return []*models.Post{}, nil
+					// 1. Get who this user follows
+					followingIDs, err := grpcClient.ListFollowing(int32(userID))
+					if err != nil {
+						return nil, err
 					}
 
-					// For each followed user, fetch their posts via gRPC
-					for _, followedUser := range tempUser.Following {
-						pbPosts, err := grpcClient.ListPostsByUser(int32(followedUser.UserId))
+					// 2. For each followed user, get their posts
+					var allPosts []*models.Post
+					for _, followedID := range followingIDs {
+						pbPosts, err := grpcClient.ListPostsByUser(followedID)
 						if err != nil {
 							continue
 						}
 
-						// Add posts to the followed user
+						// Convert protobuf posts to our model
 						for _, pbPost := range pbPosts {
 							timestamp, _ := time.Parse(time.RFC3339, pbPost.Timestamp)
-							followedUser.AddPost(&models.Post{
+							allPosts = append(allPosts, &models.Post{
 								PostId:    int(pbPost.PostId),
 								UserId:    int(pbPost.UserId),
 								Content:   pbPost.Content,
@@ -97,7 +83,15 @@ func SetupSchema(grpcClient *grpcclient.GRPCClient) (graphql.Schema, error) {
 						}
 					}
 
-					return tempUser.GetUserFeed(), nil
+					// 3. Sort by timestamp (newest first) and limit to 20
+					sort.Slice(allPosts, func(i, j int) bool {
+						return allPosts[i].TimeStamp.After(allPosts[j].TimeStamp)
+					})
+
+					if len(allPosts) > 20 {
+						return allPosts[:20], nil
+					}
+					return allPosts, nil
 				},
 			},
 		},

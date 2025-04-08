@@ -33,6 +33,7 @@ func (u *User) GetLatestPostByUser(userId int) *Post {
 	return nil
 }
 
+// Returns 20 recents post by user
 func (u *User) GetRecentPostsByUser(userId int) []*Post {
 	count := 20
 	if h, ok := u.Posts[userId]; ok && h.Len() > 0 {
@@ -54,6 +55,7 @@ func (u *User) GetRecentPostsByUser(userId int) []*Post {
 	return nil
 }
 
+// Get User Feed From its Followings
 func (u *User) GetUserFeed() []*Post {
 	var wg sync.WaitGroup
 	var mu sync.Mutex

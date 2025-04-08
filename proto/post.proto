@@ -19,6 +19,21 @@ message ListPostsResponse {
   repeated Post posts = 1;
 }
 
+message FollowingUser {
+  int32 userId = 1;
+  string userName = 2;
+}
+
+message ListFollowingRequest {
+  int32 userId = 1;
+}
+
+message ListFollowingResponse {
+  repeated int32 followingIds = 1;
+}
+
+
 service PostService {
   rpc ListPostsByUser(ListPostsRequest) returns (ListPostsResponse);
+  rpc ListFollowing(ListFollowingRequest) returns (ListFollowingResponse);
 }

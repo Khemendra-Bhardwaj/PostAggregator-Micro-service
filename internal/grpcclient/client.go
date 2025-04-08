@@ -38,3 +38,12 @@ func (c *GRPCClient) ListPostsByUser(userID int32) ([]*postpb.Post, error) {
 	}
 	return res.Posts, nil
 }
+
+func (c *GRPCClient) ListFollowing(userID int32) ([]int32, error) {
+	req := &postpb.ListFollowingRequest{UserId: userID}
+	res, err := c.Client.ListFollowing(context.Background(), req)
+	if err != nil {
+		return nil, err
+	}
+	return res.FollowingIds, nil
+}

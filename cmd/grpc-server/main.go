@@ -17,6 +17,20 @@ type postServer struct {
 	users map[int32]*models.User
 }
 
+func (s *postServer) ListFollowing(ctx context.Context, req *postpb.ListFollowingRequest) (*postpb.ListFollowingResponse, error) {
+	user, exists := s.users[req.UserId]
+	if !exists {
+		return &postpb.ListFollowingResponse{}, nil
+	}
+
+	var followingIds []int32
+	for _, u := range user.Following {
+		followingIds = append(followingIds, int32(u.UserId))
+	}
+
+	return &postpb.ListFollowingResponse{FollowingIds: followingIds}, nil
+}
+
 func (s *postServer) ListPostsByUser(ctx context.Context, req *postpb.ListPostsRequest) (*postpb.ListPostsResponse, error) {
 	user, exists := s.users[req.UserId]
 	if !exists {
