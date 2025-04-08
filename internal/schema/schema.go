@@ -44,6 +44,7 @@ func SetupSchema(grpcClient *grpcclient.GRPCClient) (graphql.Schema, error) {
 	rootQuery := graphql.NewObject(graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
+			// Get user's own posts (timeline)
 			"getTimeline": &graphql.Field{
 				Type: graphql.NewList(postType),
 				Args: graphql.FieldConfigArgument{
@@ -57,21 +58,81 @@ func SetupSchema(grpcClient *grpcclient.GRPCClient) (graphql.Schema, error) {
 						return nil, err
 					}
 
-					// 1. Get who this user follows
+					// Get user's own posts
+					pbPosts, err := grpcClient.ListPostsByUser(int32(userID))
+					if err != nil {
+						return nil, err
+					}
+
+					var posts []*models.Post
+					for _, pbPost := range pbPosts {
+						timestamp, _ := time.Parse(time.RFC3339, pbPost.Timestamp)
+						posts = append(posts, &models.Post{
+							PostId:    int(pbPost.PostId),
+							UserId:    int(pbPost.UserId),
+							Content:   pbPost.Content,
+							TimeStamp: timestamp,
+						})
+					}
+
+					// Sort by timestamp (newest first)
+					sort.Slice(posts, func(i, j int) bool {
+						return posts[i].TimeStamp.After(posts[j].TimeStamp)
+					})
+
+					if len(posts) > 20 {
+						return posts[:20], nil
+					}
+					return posts, nil
+				},
+			},
+			// Get combined feed (followed users' posts)
+			"getFeed": &graphql.Field{
+				Type: graphql.NewList(postType),
+				Args: graphql.FieldConfigArgument{
+					"userId": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.ID),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					userID, err := strconv.Atoi(p.Args["userId"].(string))
+					if err != nil {
+						return nil, err
+					}
+
+					// // 1. Get user's own posts
+					// ownPosts, err := grpcClient.ListPostsByUser(int32(userID))
+					// if err != nil {
+					// 	return nil, err
+					// }
+
+					// 2. Get who this user follows
 					followingIDs, err := grpcClient.ListFollowing(int32(userID))
 					if err != nil {
 						return nil, err
 					}
 
-					// 2. For each followed user, get their posts
+					// 3. Get posts from followed users
 					var allPosts []*models.Post
+
+					// // Add user's own posts
+					// for _, pbPost := range ownPosts {
+					// 	timestamp, _ := time.Parse(time.RFC3339, pbPost.Timestamp)
+					// 	allPosts = append(allPosts, &models.Post{
+					// 		PostId:    int(pbPost.PostId),
+					// 		UserId:    int(pbPost.UserId),
+					// 		Content:   pbPost.Content,
+					// 		TimeStamp: timestamp,
+					// 	})
+					// }
+
+					// Add followed users' posts
 					for _, followedID := range followingIDs {
 						pbPosts, err := grpcClient.ListPostsByUser(followedID)
 						if err != nil {
 							continue
 						}
 
-						// Convert protobuf posts to our model
 						for _, pbPost := range pbPosts {
 							timestamp, _ := time.Parse(time.RFC3339, pbPost.Timestamp)
 							allPosts = append(allPosts, &models.Post{
@@ -83,7 +144,7 @@ func SetupSchema(grpcClient *grpcclient.GRPCClient) (graphql.Schema, error) {
 						}
 					}
 
-					// 3. Sort by timestamp (newest first) and limit to 20
+					// 4. Sort by timestamp (newest first) and limit to 20
 					sort.Slice(allPosts, func(i, j int) bool {
 						return allPosts[i].TimeStamp.After(allPosts[j].TimeStamp)
 					})
