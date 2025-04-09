@@ -1,0 +1,1 @@
+Task1 : Implement Golang Micro-service using gRPC & Graphql which has users and its followers, and getTimeline functionality to fetch users latest 20 post and getFeed functionality to fetch user's followers  latest 20 posts 

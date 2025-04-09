@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"postaggregator/internal/grpcclient"
 	"postaggregator/internal/schema"
@@ -11,7 +12,12 @@ import (
 )
 
 func main() {
-	grpcClient, err := grpcclient.NewGRPCClient("localhost:50051") // use Singleton pattern
+	grpcServerAddr := os.Getenv("GRPC_SERVER_ADDRESS")
+	if grpcServerAddr == "" {
+		grpcServerAddr = "grpc-server:50051" // Use Docker service name
+	}
+
+	grpcClient, err := grpcclient.NewGRPCClient(grpcServerAddr) // use Singleton pattern
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %v", err)
 	}

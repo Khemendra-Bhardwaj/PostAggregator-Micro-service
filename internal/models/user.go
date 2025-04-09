@@ -6,8 +6,8 @@ import (
 )
 
 type User struct {
-	UserId    int    // Changed from userId to UserId
-	UserName  string // Changed from userName to UserName
+	UserId    int
+	UserName  string
 	Posts     map[int]*PostHeap
 	Following []*User
 	Followers []*User

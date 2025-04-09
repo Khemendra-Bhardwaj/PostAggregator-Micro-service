@@ -75,7 +75,7 @@ func (s *postServer) GetUserFeed(ctx context.Context, req *postpb.ListPostsReque
 	return &postpb.ListPostsResponse{Posts: pbPosts}, nil
 }
 
-// Struct for reading from users.json
+// Struct for reading from data.json
 // JSON structures
 type userData struct {
 	Users []userJSON `json:"users"`
@@ -149,30 +149,17 @@ func loadUsersFromFile(filepath string) (map[int32]*models.User, error) {
 
 func main() {
 	users := make(map[int32]*models.User)
-	users, err := loadUsersFromFile("/home/khemendra/Desktop/PostAggregator/data.json")
+	// fetching data.json (which contain dummy data) from docker container path
+	dataFile := os.Getenv("DATA_FILE")
+	if dataFile == "" {
+		dataFile = "/app/data.json" // default path
+	}
+
+	users, err := loadUsersFromFile(dataFile)
 	if err != nil {
 		log.Fatalf("Failed to load users from file: %v", err)
 	}
 	log.Printf("Successfully loaded %d users", len(users))
-	/*
-		alice := &models.User{UserId: 1, UserName: "Alice"}
-		bob := &models.User{UserId: 2, UserName: "Bob"}
-		charlie := &models.User{UserId: 3, UserName: "Charlie"}
-
-		bob.Following = []*models.User{charlie}
-
-		alice.Following = []*models.User{bob, charlie}
-		charlie.Following = []*models.User{bob}
-
-		now := time.Now()
-		bob.AddPost(&models.Post{PostId: 1, UserId: 2, TimeStamp: now.Add(-2 * time.Minute), Content: "Bob's post"})
-		charlie.AddPost(&models.Post{PostId: 2, UserId: 3, TimeStamp: now.Add(-1 * time.Minute), Content: "Charlie's post"})
-
-		users[1] = alice
-		users[2] = bob
-		users[3] = charlie
-
-	*/
 
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
