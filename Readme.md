@@ -13,8 +13,6 @@ A Golang microservice implementing gRPC and GraphQL to manage users, their posts
 
 ## Technical Approach
 
-### Architecture
-
 
 ### Key Components
 - **Models**:
@@ -42,7 +40,8 @@ A Golang microservice implementing gRPC and GraphQL to manage users, their posts
    - Passing data file (which have dummy data of users and posts),  through environment variables
    - Container networking between gRPC and GraphQL services
 
-3. **Variable Naming ofc...**
+3. Variable Naming :`( 
+
    
 
 ## Local Setup
@@ -56,8 +55,7 @@ A Golang microservice implementing gRPC and GraphQL to manage users, their posts
 git clone https://github.com/yourusername/post-aggregator.git
 cd post-aggregator
 make up  # or docker-compose up --build
-
-#verify using docker ps , are containers up or not 
+```
 
 ### Sample Query
 
@@ -67,9 +65,10 @@ make up  # or docker-compose up --build
 curl -X POST -H "Content-Type: application/json" \
 -d '{"query": "{ getFeed(userId: \"1\") { postId content } }"}' \
 http://localhost:8080/graphql
+```
 
-
-# Get user's timeline (their own posts)
+### Get user's timeline (their own posts)
+``` bash
 query {
   getTimeline(userId: "1") {
     postId
@@ -77,8 +76,10 @@ query {
     timestamp
   }
 }
+```
 
-# Get user's feed (posts from followed users)
+### Get user's feed (posts from followed users)
+``` bash 
 query {
   getFeed(userId: "1") {
     postId
@@ -87,8 +88,42 @@ query {
     userId
   }
 }
+```
 
+### Sample outputs 
 
+``` bash
+
+Command:
+ curl -X POST -H "Content-Type: application/json" \
+-d '{"query": "{ getTimeline(userId: \"1\") { postId content } }"}' \
+http://localhost:8080/graphql
+
+Expected Response: 
+{
+	"data": {
+		"getTimeline": [
+			{
+				"content": "Building my first microservice.",
+				"postId": "2"
+			},
+			{
+				"content": "Exploring gRPC with Golang!",
+				"postId": "1"
+			}
+		]
+	}
+}
+
+```
+
+``` bash 
+
+Command : 
+
+curl -X POST -H "Content-Type: application/json" -d '{"query": "{ getFeed(userId: \"1\") { postId content } }"}' http://localhost:8080/graphql
+
+Expected Response: 
 {
   "data": {
     "getFeed": [
@@ -105,8 +140,12 @@ query {
     ]
   }
 }
+```
 
-.
+
+### Code Structure Overview
+``` bash 
+
 ├── cmd
 │   ├── grpc-server/       # gRPC server implementation
 │   └── graphql-server/    # GraphQL server implementation
@@ -119,3 +158,4 @@ query {
 ├── Dockerfile
 └── docker-compose.yml
 
+```
