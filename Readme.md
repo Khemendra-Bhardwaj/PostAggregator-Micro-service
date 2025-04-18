@@ -52,7 +52,7 @@ A Golang microservice implementing gRPC and GraphQL to manage users, their posts
 
 ### Installation
 ```bash
-git clone https://github.com/yourusername/post-aggregator.git
+git clone git@github.com:Khemendra-Bhardwaj/PostAggregator-Micro-service.git
 cd post-aggregator
 make up  # or docker-compose up --build
 ```
